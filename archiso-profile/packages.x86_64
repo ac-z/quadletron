@@ -11,3 +11,4 @@ qemu-guest-agent
 syslinux
 virtualbox-guest-utils-nox
 podman
+fuse-overlayfs

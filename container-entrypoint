@@ -1,0 +1,41 @@
+#!/bin/bash
+
+if [ ! -d /out ]; then 
+    echo "No /out found. Please mount an output dir to /out with -v."
+    exit 1
+fi
+
+PROFILE=/profile
+
+if [ -n "$(ls /config)" ]; then
+    # Recreate working profile
+    rm -rf /working-profile/*
+    cp -r /profile /working-profile
+    # Apply quadlets
+    mkdir -p /working-profile/airootfs/etc/containers/systemd
+    for container in $(find /config -name "*.container"); do
+        cp $container /working-profile/airootfs/etc/containers/systemd/
+    done
+    # Apply users
+    USER_ID=1000
+    for user_config in $(find /config -name "*.user"); do
+        (
+            # Get config variables
+            source $user_config
+            # Add user
+            echo "$NAME:x:$USER_ID:$USER_ID::/home/$NAME:/usr/bin/bash" >> /working-profile/airootfs/etc/passwd
+            echo "$NAME::0::::::" >> /working-profile/airootfs/etc/shadow
+            echo "$NAME:x:$USER_ID:" >> /working-profile/airootfs/etc/group
+            echo "$NAME:!*::" >> /working-profile/airootfs/etc/gshadow
+            mkdir -p /working-profile/airootfs/home/$NAME/.ssh
+            echo "$PUBKEY" > /working-profile/airootfs/home/$NAME/.ssh/authorized_keys
+            if [ "$SUDO" = true ]; then
+                echo "$NAME ALL=(ALL) ALL" >> /working-profile/airootfs/etc/sudoers
+            fi
+        )
+        # Ensure each user has a unique ID
+        USER_ID=$((USER_ID+1))
+    done
+fi
+
+mkarchiso -v -o /out /working-profile
