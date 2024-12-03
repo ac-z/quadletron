@@ -33,6 +33,6 @@ case $1 in
             sudo chown -R $USER out/$iso_file
         fi
     ;;
-    '-h'|'--help'|'help') help_msg;;
+    '-h'|'--help'|'help'|'') help_msg;;
 esac
 
