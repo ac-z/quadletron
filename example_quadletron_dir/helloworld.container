@@ -1,0 +1,13 @@
+[Unit]
+Description=Hello world page hosted via http
+After=local-fs.target
+
+[Container]
+Image=docker.io/testcontainers/helloworld
+PublishPort=80:8080
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=multi-user.target default.target

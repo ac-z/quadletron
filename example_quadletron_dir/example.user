@@ -1,0 +1,3 @@
+NAME=example
+SUDO=true
+PUBKEY="ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIP2WeRirIdfKvg0tp1rpDnXlnvYqWb/FGGsCpVf7bJt4"
