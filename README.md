@@ -23,7 +23,7 @@ incorporates changes from a "Quadletron dir", which contains Podman Quadlets
 (ending in ".container") as well as env var configs for individual users (ending
 in ".user").
 
-An example Quadletron dir is available in `example_quadletron`. Note that it
+An example Quadletron dir is available in `example_quadletron_dir`. Note that it
 includes a file with neither of the extensions the script looks for. This file,
 and any others lacking ".container" or ".user", will be ignored.
 
