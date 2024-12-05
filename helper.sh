@@ -18,19 +18,20 @@ function help_msg() {
 }
 
 case $1 in
-    'build') sudo podman build -t quadletron . || echo "Note: Must cd to the root of the repo first.";;
+    'build') sudo "$DOCKER" build -t quadletron . || echo "Note: Must cd to the root of the repo first.";;
     'run') mkdir -p ./out;
         # Run mkarchiso
-        sudo podman run \
+        sudo "$DOCKER" run \
             --privileged \
-            -v "$(realpath $2):/config" \
+            -v "$(realpath "$2"):/config" \
             -v ./out:/out \
             localhost/quadletron:latest;
         # Find the newest iso in ./out
-        iso_file=$(ls -t out/ | head -1)
+        # shellcheck disable=SC2012
+        iso_file=$(ls -t ./out | head -n 1)
         # Change owner to the current user
-        if [ -n "./out/$iso_file" ]; then
-            sudo chown -R $USER out/$iso_file
+        if [ -f "./out/$iso_file" ]; then
+            sudo chown -R "$USER" "out/$iso_file"
         fi
     ;;
     '-h'|'--help'|'help'|'') help_msg;;
