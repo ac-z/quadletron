@@ -1,6 +1,6 @@
 # Quadletron
 
-Generate live Arch images that just run Podman Quadlets!
+Generate live Arch images that *just* run Podman Quadlets!
 
 ### Why?
 
@@ -16,16 +16,12 @@ upstream are available immediately, instead of whenever they get backported.
 ### How?
 
 The directory `archiso-profile` is set up for use with Arch Linux's fantastic
-`mkarchiso` tool, which creates live Arch images for use with removeable media.
-The Quadletron container includes `archiso` and the profile directory on build.
-With each run, the container makes a variation of `archiso-profile` that
-incorporates changes from a "Quadletron dir", which contains Podman Quadlets
-(ending in ".container") as well as env var configs for individual users (ending
-in ".user").
-
-An example Quadletron dir is available in `example_quadletron_dir`. Note that it
-includes a file with neither of the extensions the script looks for. This file,
-and any others lacking ".container" or ".user", will be ignored.
+`mkarchiso` tool, which creates live Arch images to boot from removeable media.
+The Quadletron container includes `mkarchiso` and a copy of the profile dir on
+build. With each run, the container makes a variation of `archiso-profile` that
+incorporates changes from a "Quadletron dir", which contains Podman Quadlet 
+files as well as *.user files that the container script reads in order to add 
+users and SSH public keys. 
 
 ### Helper script
 
@@ -40,6 +36,37 @@ Command to build a Quadletron iso for a given Quadletron dir:
 ```bash
 ./helper.sh run <quadletron_dir>
 ```
+
+### Valid file extensions 
+
+Podman Quadlets:
+* *.container
+* *.volume
+* *.network
+* *.build
+* *.pod
+* *.kube
+
+Quadletron configs:
+* *.user
+* (maybe more in the future)
+
+An example Quadletron dir is available in `example_quadletron`. Note that it
+includes a file with none of the extensions the script looks for. This file,
+and any others lacking the file extensions above, will be ignored.
+
+### Config files
+
+Any *.user files picked up by the container script will be sourced as bash
+scripts inside the container. In these scripts, the following variables are
+necessary, or else the iso won't build.
+* `NAME`: The desired username for the user being created
+* `PUBKEY`: The public SSH key to be placed in the user's authorized_keys file
+
+The following optional variables are also available:
+* `SUDO`: If set to true, the user will be given sudo privileges.
+* `USER_ID`: The user ID to be used. If not specified, each user is given a
+unique ID incrementally starting from 1000.
 
 ### Customizing the archiso profile
 

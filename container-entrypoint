@@ -12,18 +12,27 @@ if [ -n "$(ls /config)" ]; then
     rm -rf /working-profile/*
     cp -r /profile /working-profile
     PROFILE=/working-profile
+
     # Apply quadlets
     mkdir -p /working-profile/airootfs/etc/containers/systemd
-    # Replace the above loop with find -exec
-    find /config -name "*.container" -exec cp {} /working-profile/airootfs/etc/containers/systemd/ \;
+    quadlet_regex='\.container$|\.volume$|\.network$|\.build$|\.pod$|\.kube$'
+    for file in $(find /config | grep -E "$quadlet_regex"); do
+        cp "$file" /working-profile/airootfs/etc/containers/systemd
+    done
+
     # Apply users
     USER_ID=1000
-    users=$(find /config -name "*.user")
+    users=$(find /config | grep -E '\.user$')
     for user_config in $users; do
         (
             # Get config variables
             # shellcheck disable=SC1090
             source "$user_config"
+            
+            # Make sure $NAME and $PUBKEY are set
+            [ -z "$NAME" ] && echo "No NAME set in $user_config" && exit 1
+            [ -z "$PUBKEY" ] && echo "No PUBKEY set in $user_config" && exit 1
+
             # Add user
             echo "$NAME:x:$USER_ID:$USER_ID::/home/$NAME:/usr/bin/bash" >> /working-profile/airootfs/etc/passwd
             echo "$NAME::0::::::" >> /working-profile/airootfs/etc/shadow
@@ -34,7 +43,7 @@ if [ -n "$(ls /config)" ]; then
             if [ "$SUDO" = true ]; then
                 echo "$NAME ALL=(ALL) ALL" >> /working-profile/airootfs/etc/sudoers
             fi
-        )
+        ) || exit 1
         # Ensure each user has a unique ID
         USER_ID=$((USER_ID+1))
     done
